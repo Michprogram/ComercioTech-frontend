@@ -504,7 +504,7 @@ function App() {
                               <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{prod.categoria}</span>
                             </td>
                             <td className="p-4 font-bold text-green-600">${prod.precio}</td>
-                            <td className={`p-4 font-bold ${prod.stock < 5 ? 'text-red-500' : 'text-gray-700'}`}>{prod.stock}</td>
+                            <td className="p-4 text-gray-600">{prod.stock}</td>
                             <td className="p-4 text-right">
                               <button onClick={() => { setFormProducto(prod); setModoEdicionProducto(true); setMostrarModalProducto(true); }} className="text-blue-500 hover:text-blue-700 font-medium px-2">Editar</button>
                               <button onClick={() => eliminarProducto(prod._id)} className="text-red-500 hover:text-red-700 font-medium px-2">Eliminar</button>

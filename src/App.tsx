@@ -13,7 +13,6 @@ interface Cliente {
 
 function App() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -56,11 +55,11 @@ function App() {
       .then(datos => {
         console.log("Datos recibidos del backend:", datos);
         setClientes(datos); // Guardamos los datos en nuestra variable de estado
-        setCargando(false);
+
       })
       .catch(error => {
         console.error("Error de conexión:", error);
-        setCargando(false);
+
       });
   }, []);
 

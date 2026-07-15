@@ -19,6 +19,9 @@ function App() {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formulario, setFormulario] = useState({ _id: '', nombre: '', rut: '', username: '', region: '', comuna: '' });
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [errorLogin, setErrorLogin] = useState('');
 
   // 3. useEffect hace que este código se ejecute SOLO UNA VEZ cuando la página carga
   useEffect(() => {
@@ -28,7 +31,7 @@ function App() {
       .then(datos => {
         console.log("Datos recibidos del backend:", datos);
         setClientes(datos); // Guardamos los datos en nuestra variable de estado
-        setCargando(false); // Indicamos que ya no estamos cargando
+        setCargando(false);
       })
       .catch(error => {
         console.error("Error de conexión:", error);
@@ -44,6 +47,39 @@ function App() {
       cliente.comuna.toLowerCase().includes(textoBusqueda)
     );
   });
+
+  // Detectar lo que se escribe en el formulario de login
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+  };
+
+  const iniciarSesion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorLogin('');
+    try {
+      const respuesta = await fetch('https://comerciotech-backend.onrender.com/api/usuario/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm)
+      });
+      const datos = await respuesta.json();
+
+      if (respuesta.ok) {
+        localStorage.setItem('token', datos.token);
+        setToken(datos.token);
+      } else {
+        setErrorLogin(datos.message || 'Error al iniciar sesión');
+      }
+    } catch (error) {
+      setErrorLogin('Error de conexión con el servidor de seguridad');
+    }
+  };
+
+  const cerrarSesion = () => {
+    localStorage.removeItem('token');
+    setToken('');
+  };
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });

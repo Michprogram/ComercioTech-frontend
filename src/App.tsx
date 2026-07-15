@@ -448,6 +448,7 @@ function App() {
                           <td className="p-4 font-medium text-gray-900">{cliente.nombre}</td>
                           <td className="p-4">{cliente.rut}</td>
                           <td className="p-4 text-gray-500">@{cliente.username}</td>
+                          <td className="p-4 text-gray-600">{cliente.comuna}, {cliente.region}</td>
                           <td className="p-4 text-right">
                             <button onClick={() => { setFormulario(cliente); setModoEdicion(true); setMostrarModal(true); }} className="text-blue-500 hover:text-blue-700 font-medium px-2">Editar</button>
                             <button onClick={() => eliminarCliente(cliente._id)} className="text-red-500 hover:text-red-700 font-medium px-2">Eliminar</button>
@@ -492,6 +493,7 @@ function App() {
                           <th className="p-4 font-semibold">Categoría</th>
                           <th className="p-4 font-semibold">Precio</th>
                           <th className="p-4 font-semibold">Stock</th>
+                          <th className="p-4 font-semibold">Ubicación</th>
                           <th className="p-4 font-semibold text-right">Acciones</th>
                         </tr>
                       </thead>
@@ -504,6 +506,7 @@ function App() {
                             </td>
                             <td className="p-4 font-bold text-green-600">${prod.precio}</td>
                             <td className={`p-4 font-bold ${prod.stock < 5 ? 'text-red-500' : 'text-gray-700'}`}>{prod.stock}</td>
+                            <td className="p-4 text-gray-600">{prod.ubicacion}</td>
                             <td className="p-4 text-right">
                               <button onClick={() => { setFormProducto(prod); setModoEdicionProducto(true); setMostrarModalProducto(true); }} className="text-blue-500 hover:text-blue-700 font-medium px-2">Editar</button>
                               <button onClick={() => eliminarProducto(prod._id)} className="text-red-500 hover:text-red-700 font-medium px-2">Eliminar</button>

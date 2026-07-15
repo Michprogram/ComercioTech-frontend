@@ -22,12 +22,24 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [errorLogin, setErrorLogin] = useState('');
-  const [pestaña, setPestaña] = useState<'clientes' | 'productos'>('clientes');
+  const [pestaña, setPestaña] = useState<'clientes' | 'productos' | 'pedidos'>('clientes');
   const [productos, setProductos] = useState<any[]>([]);
   const [busquedaProducto, setBusquedaProducto] = useState('');
   const [cargandoProductos, setCargandoProductos] = useState(false);
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
   const [modoEdicionProducto, setModoEdicionProducto] = useState(false);
+  const [pedidos, setPedidos] = useState<any[]>([]);
+  const [cargandoPedidos, setCargandoPedidos] = useState(false);
+  const [mostrarModalPedido, setMostrarModalPedido] = useState(false);
+  const [modoEdicionPedido, setModoEdicionPedido] = useState(false);
+
+  const [formPedido, setFormPedido] = useState({
+    _id: '',
+    cliente: '',    // Guardará el ID del cliente seleccionado
+    producto: '',   // Guardará el ID del producto seleccionado
+    cantidad: 1,
+    estado: 'Pendiente'
+  });
 
   const [formProducto, setFormProducto] = useState({
     _id: '',
@@ -52,6 +64,95 @@ function App() {
         setCargando(false);
       });
   }, []);
+
+  // 1. Obtener todos los pedidos
+  const obtenerPedidos = async () => {
+    setCargandoPedidos(true);
+    try {
+      const respuesta = await fetch('https://comerciotech-backend.onrender.com/api/pedidos');
+      const datos = await respuesta.json();
+      if (respuesta.ok) {
+        setPedidos(datos);
+      }
+    } catch (error) {
+      console.error('Error al obtener pedidos:', error);
+    } finally {
+      setCargandoPedidos(false);
+    }
+  };
+
+  // 2. Cargar pedidos automáticamente al entrar a la pestaña
+  useEffect(() => {
+    if (token && pestaña === 'pedidos') {
+      obtenerPedidos();
+    }
+  }, [token, pestaña]);
+
+  // 3. Manejar cambios en el formulario de pedidos
+  const handlePedidoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormPedido({
+      ...formPedido,
+      [name]: name === 'cantidad' ? Number(value) : value
+    });
+  };
+
+  // 4. Crear o Editar un pedido
+  const guardarPedido = async () => {
+    // Si no se ha seleccionado cliente o producto, detenemos la operación
+    if (!formPedido.cliente || !formPedido.producto) {
+      alert('Por favor, selecciona un cliente y un producto.');
+      return;
+    }
+
+    const url = modoEdicionPedido
+      ? `https://comerciotech-backend.onrender.com/api/pedidos/${formPedido._id}`
+      : 'https://comerciotech-backend.onrender.com/api/pedidos';
+
+    const metodo = modoEdicionPedido ? 'PUT' : 'POST';
+
+    try {
+      const respuesta = await fetch(url, {
+        method: metodo,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formPedido)
+      });
+
+      if (respuesta.ok) {
+        setMostrarModalPedido(false);
+        obtenerPedidos(); // Recargar lista
+      } else {
+        const errorDatos = await respuesta.json();
+        alert(errorDatos.message || 'Error al guardar el pedido');
+      }
+    } catch (error) {
+      console.error('Error en la petición de pedido:', error);
+    }
+  };
+
+  // 5. Eliminar un pedido
+  const eliminarPedido = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este pedido?')) return;
+
+    try {
+      const respuesta = await fetch(`https://comerciotech-backend.onrender.com/api/pedidos/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (respuesta.ok) {
+        obtenerPedidos();
+      } else {
+        alert('No se pudo eliminar el pedido');
+      }
+    } catch (error) {
+      console.error('Error al eliminar pedido:', error);
+    }
+  };
+
+
+
+
+
 
   // 1. Bloque independiente para filtrar Clientes
   const clientesFiltrados = clientes.filter(cliente => {
@@ -300,6 +401,15 @@ function App() {
               >
                 Catálogo de Productos
               </button>
+              <button
+                onClick={() => setPestaña('pedidos')}
+                className={`py-3 px-4 font-bold text-sm uppercase tracking-wider transition-all ${pestaña === 'pedidos'
+                  ? 'text-blue-600 border-b-4 border-blue-600'
+                  : 'text-gray-400 hover:text-gray-600'
+                  }`}
+              >
+                Gestión de Pedidos
+              </button>
             </div>
 
             {/* ================= PESTAÑA: CLIENTES ================= */}
@@ -408,7 +518,94 @@ function App() {
               </div>
             )}
 
-            {/* MODAL CLIENTES (El mismo que ya tenías) */}
+            {/* ================= PESTAÑA: PEDIDOS ================= */}
+            {pestaña === 'pedidos' && (
+              <div className="animate-fade-in-up">
+                <div className="mb-6 flex justify-between items-center">
+                  <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg font-medium text-sm">
+                    Total Pedidos: {pedidos.length}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setFormPedido({ _id: '', cliente: '', producto: '', cantidad: 1, estado: 'Pendiente' });
+                      setModoEdicionPedido(false);
+                      setMostrarModalPedido(true);
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg font-semibold whitespace-nowrap"
+                  >
+                    + Nuevo Pedido
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                  {cargandoPedidos ? (
+                    <div className="p-8 text-center text-gray-500">Cargando pedidos...</div>
+                  ) : (
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50 border-b text-gray-600 text-sm uppercase">
+                          <th className="p-4 font-semibold">Cliente</th>
+                          <th className="p-4 font-semibold">Producto</th>
+                          <th className="p-4 font-semibold">Cantidad</th>
+                          <th className="p-4 font-semibold">Estado</th>
+                          <th className="p-4 font-semibold text-right">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {pedidos.length > 0 ? (
+                          pedidos.map((pedido) => (
+                            <tr key={pedido._id} className="hover:bg-purple-50">
+                              <td className="p-4 font-medium text-gray-900">
+                                {pedido.cliente?.nombre || 'Cliente no disponible'}
+                              </td>
+                              <td className="p-4">
+                                {pedido.producto?.nombre || 'Producto no disponible'}
+                              </td>
+                              <td className="p-4 font-semibold">{pedido.cantidad}</td>
+                              <td className="p-4">
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${pedido.estado === 'Completado'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-yellow-100 text-yellow-700'
+                                  }`}>
+                                  {pedido.estado}
+                                </span>
+                              </td>
+                              <td className="p-4 text-right">
+                                <button
+                                  onClick={() => {
+                                    setFormPedido({
+                                      _id: pedido._id,
+                                      cliente: pedido.cliente?._id || '',
+                                      producto: pedido.producto?._id || '',
+                                      cantidad: pedido.cantidad,
+                                      estado: pedido.estado
+                                    });
+                                    setModoEdicionPedido(true);
+                                    setMostrarModalPedido(true);
+                                  }}
+                                  className="text-blue-500 hover:text-blue-700 font-medium px-2"
+                                >
+                                  Editar
+                                </button>
+                                <button onClick={() => eliminarPedido(pedido._id)} className="text-red-500 hover:text-red-700 font-medium px-2">Eliminar</button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-gray-500">
+                              No hay pedidos registrados. ¡Crea el primero!
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* MODAL CLIENTES */}
             {mostrarModal && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -458,6 +655,84 @@ function App() {
                   <div className="px-6 py-4 border-t flex justify-end gap-3 bg-gray-50">
                     <button onClick={() => setMostrarModalProducto(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
                     <button onClick={guardarProducto} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ================= MODAL PEDIDOS ================= */}
+            {mostrarModalPedido && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+                  <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                    <h3 className="font-bold text-gray-800">{modoEdicionPedido ? 'Editar Pedido' : 'Nuevo Pedido'}</h3>
+                    <button onClick={() => setMostrarModalPedido(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                  </div>
+                  <div className="p-6 space-y-4">
+
+                    {/* SELECT DE CLIENTES */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Seleccionar Cliente</label>
+                      <select
+                        name="cliente"
+                        value={formPedido.cliente}
+                        onChange={handlePedidoChange}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white"
+                      >
+                        <option value="">-- Selecciona un cliente --</option>
+                        {clientes.map(cli => (
+                          <option key={cli._id} value={cli._id}>{cli.nombre} ({cli.rut})</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* SELECT DE PRODUCTOS */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Seleccionar Producto</label>
+                      <select
+                        name="producto"
+                        value={formPedido.producto}
+                        onChange={handlePedidoChange}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white"
+                      >
+                        <option value="">-- Selecciona un producto --</option>
+                        {productos.map(prod => (
+                          <option key={prod._id} value={prod._id}>{prod.nombre} - ${prod.precio}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* CANTIDAD */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Cantidad</label>
+                      <input
+                        type="number"
+                        name="cantidad"
+                        min="1"
+                        value={formPedido.cantidad}
+                        onChange={handlePedidoChange}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                      />
+                    </div>
+
+                    {/* ESTADO */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Estado del Pedido</label>
+                      <select
+                        name="estado"
+                        value={formPedido.estado}
+                        onChange={handlePedidoChange}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white"
+                      >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Completado">Completado</option>
+                      </select>
+                    </div>
+
+                  </div>
+                  <div className="px-6 py-4 border-t flex justify-end gap-3 bg-gray-50">
+                    <button onClick={() => setMostrarModalPedido(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                    <button onClick={guardarPedido} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Guardar Pedido</button>
                   </div>
                 </div>
               </div>

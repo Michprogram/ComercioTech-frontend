@@ -45,6 +45,46 @@ function App() {
     );
   });
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormulario({ ...formulario, [e.target.name]: e.target.value });
+  };
+
+  const guardarCliente = async () => {
+    const url = modoEdicion
+      ? `https://comerciotech-backend.onrender.com/api/clientes/${formulario._id}`
+      : 'https://comerciotech-backend.onrender.com/api/clientes';
+
+    try {
+      const respuesta = await fetch(url, {
+        method: modoEdicion ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formulario)
+      });
+
+      if (respuesta.ok) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error al guardar:", error);
+    }
+  };
+
+  const eliminarCliente = async (id: string) => {
+    if (!window.confirm('¿Estás segura de que deseas eliminar este cliente para siempre?')) return;
+
+    try {
+      const respuesta = await fetch(`https://comerciotech-backend.onrender.com/api/clientes/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (respuesta.ok) window.location.reload();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+    }
+  };
+
+
+
   return (
     <div className="min-h-screen bg-gray-100 p-8 font-sans text-gray-800">
       <div className="max-w-6xl mx-auto">
@@ -56,7 +96,11 @@ function App() {
               Total: {clientesFiltrados.length}
             </div>
             <button
-              onClick={() => { setModoEdicion(false); setMostrarModal(true); }}
+              onClick={() => {
+                setFormulario({ _id: '', nombre: '', rut: '', username: '', region: '', comuna: '' });
+                setModoEdicion(false);
+                setMostrarModal(true);
+              }}
               className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md font-semibold transition-colors"
             >
               + Nuevo Cliente

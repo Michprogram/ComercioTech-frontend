@@ -12,7 +12,6 @@ interface Cliente {
 }
 
 function App() {
-  // 2. Creamos una variable de estado para guardar los clientes (inicia como un arreglo vacío)
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
@@ -35,8 +34,8 @@ function App() {
 
   const [formPedido, setFormPedido] = useState({
     _id: '',
-    cliente: '',    // Guardará el ID del cliente seleccionado
-    producto: '',   // Guardará el ID del producto seleccionado
+    cliente_id: '',    // Guardará el ID del cliente seleccionado
+    productos: '',   // Guardará el ID del producto seleccionado
     cantidad: 1,
     estado: 'Pendiente'
   });
@@ -49,7 +48,7 @@ function App() {
     categoria: ''
   });
 
-  // 3. useEffect hace que este código se ejecute SOLO UNA VEZ cuando la página carga
+  // Cargar clientes al iniciar la app 
   useEffect(() => {
     fetch('https://comerciotech-backend.onrender.com/api/clientes')
       //fetch('http://localhost:3000/api/clientes')
@@ -99,8 +98,8 @@ function App() {
 
   // 4. Crear o Editar un pedido
   const guardarPedido = async () => {
-    // Si no se ha seleccionado cliente o producto, detenemos la operación
-    if (!formPedido.cliente || !formPedido.producto) {
+
+    if (!formPedido.cliente_id || !formPedido.productos) {
       alert('Por favor, selecciona un cliente y un producto.');
       return;
     }
@@ -120,7 +119,7 @@ function App() {
 
       if (respuesta.ok) {
         setMostrarModalPedido(false);
-        obtenerPedidos(); // Recargar lista
+        obtenerPedidos();
       } else {
         const errorDatos = await respuesta.json();
         alert(errorDatos.message || 'Error al guardar el pedido');
@@ -172,7 +171,7 @@ function App() {
 
 
 
-  // Detectar lo que se escribe en el formulario de login
+  // Login  
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
   };
@@ -204,7 +203,7 @@ function App() {
     setToken('');
   };
 
-
+  // Guardar y eliminar clientes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
@@ -292,7 +291,7 @@ function App() {
 
       if (respuesta.ok) {
         setMostrarModalProducto(false);
-        obtenerProductos(); // Recargamos la lista
+        obtenerProductos();
       } else {
         alert('Error al guardar el producto');
       }
@@ -311,7 +310,7 @@ function App() {
       });
 
       if (respuesta.ok) {
-        obtenerProductos(); // Recargamos la lista
+        obtenerProductos();
       } else {
         alert('No se pudo eliminar el producto');
       }
@@ -527,7 +526,7 @@ function App() {
                   </div>
                   <button
                     onClick={() => {
-                      setFormPedido({ _id: '', cliente: '', producto: '', cantidad: 1, estado: 'Pendiente' });
+                      setFormPedido({ _id: '', cliente_id: '', productos: '', cantidad: 1, estado: 'Pendiente' });
                       setModoEdicionPedido(false);
                       setMostrarModalPedido(true);
                     }}
@@ -556,10 +555,13 @@ function App() {
                           pedidos.map((pedido) => (
                             <tr key={pedido._id} className="hover:bg-purple-50">
                               <td className="p-4 font-medium text-gray-900">
-                                {pedido.cliente?.nombre || 'Cliente no disponible'}
+                                {pedido.cliente_id?.nombre || 'Cliente no disponible'}
                               </td>
+
+
+
                               <td className="p-4">
-                                {pedido.producto?.nombre || 'Producto no disponible'}
+                                {pedido.productos?.nombre || 'Producto no disponible'}
                               </td>
                               <td className="p-4 font-semibold">{pedido.cantidad}</td>
                               <td className="p-4">
@@ -575,8 +577,8 @@ function App() {
                                   onClick={() => {
                                     setFormPedido({
                                       _id: pedido._id,
-                                      cliente: pedido.cliente?._id || '',
-                                      producto: pedido.producto?._id || '',
+                                      cliente_id: pedido.cliente?._id || '',
+                                      productos: pedido.producto?._id || '',
                                       cantidad: pedido.cantidad,
                                       estado: pedido.estado
                                     });
@@ -674,8 +676,8 @@ function App() {
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Seleccionar Cliente</label>
                       <select
-                        name="cliente"
-                        value={formPedido.cliente}
+                        name="cliente_id"
+                        value={formPedido.cliente_id}
                         onChange={handlePedidoChange}
                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white"
                       >
@@ -690,8 +692,8 @@ function App() {
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Seleccionar Producto</label>
                       <select
-                        name="producto"
-                        value={formPedido.producto}
+                        name="productos"
+                        value={formPedido.productos}
                         onChange={handlePedidoChange}
                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white"
                       >

@@ -438,6 +438,7 @@ function App() {
                         <th className="p-4 font-semibold">Nombre</th>
                         <th className="p-4 font-semibold">RUT</th>
                         <th className="p-4 font-semibold">Usuario</th>
+                        <th className="p-4 font-semibold">Ubicación</th>
                         <th className="p-4 font-semibold text-right">Acciones</th>
                       </tr>
                     </thead>

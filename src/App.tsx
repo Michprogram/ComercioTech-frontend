@@ -42,7 +42,6 @@ function App() {
     );
   });
 
-
   return (
     <div className="min-h-screen bg-gray-100 p-8 font-sans text-gray-800">
       <div className="max-w-6xl mx-auto">
@@ -54,9 +53,19 @@ function App() {
             <p className="text-gray-500 mt-1">Panel de Administración de Clientes</p>
           </div>
           <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow font-medium">
-            Total Registros: {clientes.length}
+            Total Registros: {clientesFiltrados.length}
           </div>
         </header>
+
+        <div className="mb-6 flex justify-end">
+          <input
+            type="text"
+            placeholder="Buscar por nombre, RUT o comuna..."
+            className="w-full md:w-1/3 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent shadow-sm transition-all"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
 
         {/* Contenedor de la Tabla */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
@@ -77,21 +86,28 @@ function App() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-gray-700">
-                  {clientes.map((cliente) => (
-                    <tr key={cliente._id} className="hover:bg-blue-50 transition-colors duration-200">
-                      <td className="p-4 font-medium text-gray-900">{cliente.nombre}</td>
-                      <td className="p-4">{cliente.rut}</td>
-                      <td className="p-4 text-gray-500">@{cliente.username}</td>
-                      <td className="p-4">{cliente.region}</td>
-                      <td className="p-4 italic text-sm">{cliente.comuna}</td>
+                  {clientesFiltrados.length > 0 ? (
+                    clientesFiltrados.map((cliente) => (
+                      <tr key={cliente._id} className="hover:bg-blue-50 transition-colors duration-200">
+                        <td className="p-4 font-medium text-gray-900">{cliente.nombre}</td>
+                        <td className="p-4">{cliente.rut}</td>
+                        <td className="p-4 text-gray-500">@{cliente.username}</td>
+                        <td className="p-4">{cliente.region}</td>
+                        <td className="p-4 italic text-sm">{cliente.comuna}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-gray-500">
+                        No se encontraron clientes que coincidan con "{busqueda}"
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

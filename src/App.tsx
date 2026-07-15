@@ -16,6 +16,9 @@ function App() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [formulario, setFormulario] = useState({ _id: '', nombre: '', rut: '', username: '', region: '', comuna: '' });
 
   // 3. useEffect hace que este código se ejecute SOLO UNA VEZ cuando la página carga
   useEffect(() => {
@@ -48,12 +51,16 @@ function App() {
 
         {/* Encabezado del Panel */}
         <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold text-blue-900">ComercioTech</h1>
-            <p className="text-gray-500 mt-1">Panel de Administración de Clientes</p>
-          </div>
-          <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow font-medium">
-            Total Registros: {clientesFiltrados.length}
+          <div className="flex items-center gap-4">
+            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-medium text-sm">
+              Total: {clientesFiltrados.length}
+            </div>
+            <button
+              onClick={() => { setModoEdicion(false); setMostrarModal(true); }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md font-semibold transition-colors"
+            >
+              + Nuevo Cliente
+            </button>
           </div>
         </header>
 
@@ -83,6 +90,8 @@ function App() {
                     <th className="p-4 font-semibold">Usuario</th>
                     <th className="p-4 font-semibold">Región</th>
                     <th className="p-4 font-semibold">Comuna</th>
+                    <th className="p-4 font-semibold text-right">Acciones</th>
+
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-gray-700">
@@ -94,7 +103,20 @@ function App() {
                         <td className="p-4 text-gray-500">@{cliente.username}</td>
                         <td className="p-4">{cliente.region}</td>
                         <td className="p-4 italic text-sm">{cliente.comuna}</td>
+                        <td className="p-4 text-right space-x-2">
+                          <button
+                            onClick={() => { setModoEdicion(true); setMostrarModal(true); }}
+                            className="text-blue-500 hover:text-blue-700 font-medium px-2">
+                            Editar
+                          </button>
+                          <button className="text-red-500 hover:text-red-700 font-medium px-2">
+                            Eliminar
+                          </button>
+                        </td>
+
+
                       </tr>
+
                     ))
                   ) : (
                     <tr>

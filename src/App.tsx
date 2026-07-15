@@ -147,18 +147,23 @@ function App() {
                         <td className="p-4 text-gray-500">@{cliente.username}</td>
                         <td className="p-4">{cliente.region}</td>
                         <td className="p-4 italic text-sm">{cliente.comuna}</td>
+
                         <td className="p-4 text-right space-x-2">
                           <button
-                            onClick={() => { setModoEdicion(true); setMostrarModal(true); }}
+                            onClick={() => {
+                              setFormulario(cliente); // ¡Esto auto-rellena el formulario!
+                              setModoEdicion(true);
+                              setMostrarModal(true);
+                            }}
                             className="text-blue-500 hover:text-blue-700 font-medium px-2">
                             Editar
                           </button>
-                          <button className="text-red-500 hover:text-red-700 font-medium px-2">
+                          <button
+                            onClick={() => eliminarCliente(cliente._id)}
+                            className="text-red-500 hover:text-red-700 font-medium px-2">
                             Eliminar
                           </button>
                         </td>
-
-
                       </tr>
 
                     ))

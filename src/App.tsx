@@ -57,7 +57,7 @@ function App() {
     e.preventDefault();
     setErrorLogin('');
     try {
-      const respuesta = await fetch('https://comerciotech-backend.onrender.com/api/usuario/login', {
+      const respuesta = await fetch('https://comerciotech-backend.onrender.com/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginForm)

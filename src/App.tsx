@@ -211,5 +211,5 @@ function App() {
     </>
   );
 }
-
+// Fin del componente principal de la aplicación.
 export default App;
